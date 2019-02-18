@@ -154,6 +154,7 @@ let renderPage content =
     html [ "lang", "en" ] [ head [] [ title [] "CrudoSql"
 
                                       loadCss "/assets/bootstrap.min.css"
+                                      loadCss "/assets/crudosql.css"
                                       tag "meta" [ "http-equiv",
                                                    "Content-Language"
                                                    "content", "en" ] [] ]

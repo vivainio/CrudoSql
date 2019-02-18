@@ -353,7 +353,7 @@ let crudoAssembly = System.Reflection.Assembly.GetExecutingAssembly()
 
 let getAsset fname =
     let aname = sprintf "CrudoSql.assets.%s" fname
-    Embedded.sendResource crudoAssembly aname true
+    Embedded.resource crudoAssembly aname
 
 let app =
     choose [
