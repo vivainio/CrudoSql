@@ -19,6 +19,14 @@ let createSchema() =
         Col "ANOTHER_COL"
     ]
 
+    let Columns = Table "INFORMATION_SCHEMA.COLUMNS"
+    decl Columns [
+        Col "TABLE_NAME"
+        Col "COLUMN_NAME"
+        Col "DATA_TYPE"
+        // Prim "ID"
+    ]
+
 
 module ConnectionConfig =
     open Db.DbConnector
@@ -46,7 +54,6 @@ let boot() =
 
 [<EntryPoint>]
 
-let main argv =
+let main _ =
     boot()
-    printfn "Hello World from F#!"
-    0 // return an integer exit code
+    0 
