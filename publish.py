@@ -23,6 +23,6 @@ nuke(prjdir + "/obj")
 def pack():
     c("dotnet pack /p:Version=%s" % version)
 
+os.chdir(prjdir)
 
-os.chdir("../" + prjdir)
 pack()
