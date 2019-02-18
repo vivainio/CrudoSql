@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
-    <Title>crudo-sql</Title>
-    <Description>Describe it here</Description>
+    <Title>CrudoSql</Title>
+    <Description>SQL database admin/CRUD ui</Description>
     <Authors>vivainio</Authors>
     <Company />
     <Copyright>Ville M. Vainio</Copyright>
