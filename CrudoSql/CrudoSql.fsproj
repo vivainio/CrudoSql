@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Title>crudo-sql</Title>
+    <Description>Describe it here</Description>
+    <Authors>vivainio</Authors>
+    <Company />
+    <Copyright>Ville M. Vainio</Copyright>
+    <PackageProjectUrl>https://github.com/vivainio/CrudoSql</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/vivainio/CrudoSql/blob/master/LICENSE</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Library.fs" />
+  </ItemGroup>
+
+</Project>
