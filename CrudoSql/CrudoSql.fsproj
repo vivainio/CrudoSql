@@ -30,4 +30,7 @@
     <PackageReference Include="Suave" Version="2.5.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="assets\*.*"/>
+  </ItemGroup>
 </Project>

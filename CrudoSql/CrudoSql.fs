@@ -10,6 +10,7 @@ open Db
 open View
 open Newtonsoft.Json
 open Introspect
+open System.IO
 
 module String =
     let truncate count (s : string) =
@@ -343,17 +344,30 @@ let showIndex() =
 
 let sqlLog() = View.SqlLog <| SqlRunner.RequestLog |> OK
 
+
+let setStatic =
+    Writers.addHeader "Cache-Control" "public"
+
+let crudoAssembly = System.Reflection.Assembly.GetExecutingAssembly()
+
+
+let getAsset fname =
+    let aname = sprintf "CrudoSql.assets.%s" fname
+    Embedded.sendResource crudoAssembly aname true
+
 let app =
-    choose [ GET >=> pathRegex "/assets/.*" >=> Files.browseHome
+    choose [
+             // GET >=> pathRegex "/assets/.*" >=> Files.browseHome
              GET >=> path "/" >=> warbler (fun _ -> showIndex())
              GET >=> pathScan "/table/%s" queryOnTable
              GET >=> pathScan "/rawtable/%s" queryOnTableRaw
              GET >=> pathScan "/editrow/%s" queryOnEditRow
-
+             GET >=> pathScan "/assets/%s" getAsset
              GET >=> path "/alltables/"
              >=> request (fun _ -> OK(viewAllTables()))
              GET >=> path "/meta/" >=> request (fun _ -> allMetaData())
              GET >=> path "/log/" >=> warbler (fun _ -> sqlLog())
+
              POST >=> pathScan "/saverow/%s" queryOnSaveRow ]
 
 let StartCrudo intf port =

@@ -153,8 +153,7 @@ let renderPage content =
                                 "href", href ] (text txt) ]
     html [ "lang", "en" ] [ head [] [ title [] "CrudoSql"
 
-                                      loadCss
-                                          "https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+                                      loadCss "/assets/bootstrap.min.css"
                                       tag "meta" [ "http-equiv",
                                                    "Content-Language"
                                                    "content", "en" ] [] ]
