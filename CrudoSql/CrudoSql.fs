@@ -222,7 +222,7 @@ let readTable tname (isRaw : bool) (req : HttpRequest) =
         match selector with
         | _ -> SelectS [ "*" ]
         //| (Select cols) -> Select (cols |> Seq.map (ColRef.PrefixTable "rootq."))
-        | _ -> selector
+        // | _ -> selector
 
     let pagedClause =
         [ outerSelector
