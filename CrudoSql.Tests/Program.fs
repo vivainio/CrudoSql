@@ -24,9 +24,14 @@ let createSchema() =
         Col "TABLE_NAME"
         Col "COLUMN_NAME"
         Col "DATA_TYPE"
-        // Prim "ID"
     ]
 
+    let perfcounters = Table "sys.dm_os_performance_counters"
+    decl perfcounters [
+        Prim "counter_name"
+        Col "cntr_value"
+        Col "object_name"
+    ]
 
 module ConnectionConfig =
     open Db.DbConnector
