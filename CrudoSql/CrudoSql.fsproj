@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -13,8 +13,22 @@
     <PackageLicenseUrl>https://github.com/vivainio/CrudoSql/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
+ <ItemGroup>
+    <Compile Include="SqlGen.fs" />
+    <Compile Include="Db.fs" />
+    <Compile Include="DbPatterns.fs" />
+    <Compile Include="Html.fs" />
+    <Compile Include="Introspect.fs" />
+    <Compile Include="SchemaGen.fs" />
+    <Compile Include="View.fs" />
+    <Compile Include="CrudoSql.fs" />
+  </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <PackageReference Include="Microsoft.FSharpLu.Json" Version="0.10.29" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="SqlFrags" Version="3.0.0" />
+    <PackageReference Include="Suave" Version="2.5.3" />
   </ItemGroup>
 
 </Project>
