@@ -14,7 +14,6 @@
   </PropertyGroup>
 
  <ItemGroup>
-    <Compile Include="SqlGen.fs" />
     <Compile Include="Db.fs" />
     <Compile Include="DbPatterns.fs" />
     <Compile Include="Html.fs" />
