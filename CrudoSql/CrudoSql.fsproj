@@ -15,7 +15,6 @@
 
  <ItemGroup>
     <Compile Include="Db.fs" />
-    <Compile Include="DbPatterns.fs" />
     <Compile Include="Html.fs" />
     <Compile Include="Introspect.fs" />
     <Compile Include="SchemaGen.fs" />

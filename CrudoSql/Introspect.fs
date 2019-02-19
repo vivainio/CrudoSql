@@ -67,10 +67,8 @@ type Introspect(conn : Conn) =
                    else None)
             |> Array.ofSeq
             |> printf "%A"
-        //|> Seq.groupBy Array.head
         colinfos
 
-    //printf "%A" colinfos
     member x.Tables() =
         let q =
             ([ SelectS [ "TABLE_NAME" ]
@@ -94,7 +92,3 @@ type Introspect(conn : Conn) =
             |> Seq.map (fun (k, ents) -> (k, Seq.map Seq.tail ents))
             |> Map.ofSeq
         rows
-
-let Test() =
-    let ix = Introspect(Db.Conn())
-    ix.ColInfo(Table "ADM_USER_DATA") |> printfn "%A"
