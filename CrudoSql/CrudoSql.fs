@@ -10,6 +10,7 @@ open Db
 open View
 open Newtonsoft.Json
 open Introspect
+open Newtonsoft.Json
 open System.IO
 
 module String =
@@ -244,10 +245,9 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
         { TableName = tname
           TotalCount = totalCount
           Data = data }
-    match tab with
-    | Some spec when isJson ->
-        JsonConvert.SerializeObject readResult.Data
-    
+    if isJson then JsonConvert.SerializeObject readResult.Data
+    else
+    match tab with    
     | Some spec ->
         let data = renderTable inputCols outputTableCols.Value readResult
         View.TableRich inputCols data spec schema filters readResult
