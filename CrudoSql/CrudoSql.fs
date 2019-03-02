@@ -89,7 +89,8 @@ let CreateViewContext(req : HttpRequest) =
       Db = SchemaGen.GetSpec()
       Req = req }
 
-let readTable tname (isRaw : bool) (req : HttpRequest) =
+
+let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
     let db = Db.Conn()
     let schema = SchemaGen.GetSpec()
 
@@ -221,9 +222,9 @@ let readTable tname (isRaw : bool) (req : HttpRequest) =
     let outerSelector =
         match selector with
         | _ -> SelectS [ "*" ]
-        //| (Select cols) -> Select (cols |> Seq.map (ColRef.PrefixTable "rootq."))
-        // | _ -> selector
 
+    //| (Select cols) -> Select (cols |> Seq.map (ColRef.PrefixTable "rootq."))
+    // | _ -> selector
     let pagedClause =
         [ outerSelector
           Raw "from"
@@ -244,10 +245,15 @@ let readTable tname (isRaw : bool) (req : HttpRequest) =
           TotalCount = totalCount
           Data = data }
     match tab with
+    | Some spec when isJson ->
+        JsonConvert.SerializeObject readResult.Data
+    
     | Some spec ->
         let data = renderTable inputCols outputTableCols.Value readResult
         View.TableRich inputCols data spec schema filters readResult
     | None -> View.TableRaw data tname filters readResult
+
+
 
 let readRawTable tableName (filters : FilterValue []) =
     let whereExp = Filters.ToSqlWhereCondition tableName filters
@@ -302,15 +308,17 @@ let saveRow tableName ctx =
         | "update" ->
             [ (Table tableName).Update values
               Filters.ToSqlWhereCondition tableName filters ]
-        | "insert" -> [ (//identityinsert tableName "ON"
-                         Table tableName).Insert values ]
+        | "insert" ->
+            [ ( //identityinsert tableName "ON"
+                Table tableName)
+                .Insert values ]
         //identityinsert tableName "OFF"
         | _ -> failwithf "unknown action %s" action
     SqlRunner.Run (sprintf "%s %s" action ctx.Req.path) stmt |> ignore
 
-let queryOnTable tableName = request (fun r -> OK(readTable tableName false r))
+let queryOnTable tableName = request (fun r -> OK(readTable tableName false false r))
 let queryOnTableRaw tableName =
-    request (fun r -> OK(readTable tableName true r))
+    request (fun r -> OK(readTable tableName true false r))
 
 let queryOnEditRow tableName =
     request (fun r ->
@@ -343,31 +351,30 @@ let showIndex() =
     View.Index(SchemaGen.GetSpec(), conndesc) |> OK
 
 let sqlLog() = View.SqlLog <| SqlRunner.RequestLog |> OK
-
-
-let setStatic =
-    Writers.addHeader "Cache-Control" "public"
-
+let setStatic = Writers.addHeader "Cache-Control" "public"
 let crudoAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-
 
 let getAsset fname =
     let aname = sprintf "CrudoSql.assets.%s" fname
     Embedded.resource crudoAssembly aname
 
+module Api =
+    let apiTable tableName =
+        request (fun r -> OK(readTable tableName false true r))
+
 let app =
-    choose [
-             // GET >=> pathRegex "/assets/.*" >=> Files.browseHome
+    choose [ // GET >=> pathRegex "/assets/.*" >=> Files.browseHome
              GET >=> path "/" >=> warbler (fun _ -> showIndex())
              GET >=> pathScan "/table/%s" queryOnTable
+             GET >=> pathScan "/api/table/%s" Api.apiTable
              GET >=> pathScan "/rawtable/%s" queryOnTableRaw
              GET >=> pathScan "/editrow/%s" queryOnEditRow
              GET >=> pathScan "/assets/%s" getAsset
+
              GET >=> path "/alltables/"
              >=> request (fun _ -> OK(viewAllTables()))
              GET >=> path "/meta/" >=> request (fun _ -> allMetaData())
              GET >=> path "/log/" >=> warbler (fun _ -> sqlLog())
-
              POST >=> pathScan "/saverow/%s" queryOnSaveRow ]
 
 let StartCrudo intf port =
