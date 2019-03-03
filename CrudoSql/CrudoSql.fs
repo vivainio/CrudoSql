@@ -33,6 +33,7 @@ module SqlRunner =
 let joinedTableName s = "JOINED_" + s
 
 // raw table has summary colrefs in order after the normal rows
+//
 let renderTable (cols : ColSpec []) (outputTableCols : ColRef [])
     (readResult : TableReadResults) =
     let table = readResult.Data
@@ -247,7 +248,7 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
           Data = data }
     if isJson then JsonConvert.SerializeObject readResult.Data
     else
-    match tab with    
+    match tab with
     | Some spec ->
         let data = renderTable inputCols outputTableCols.Value readResult
         View.TableRich inputCols data spec schema filters readResult
@@ -361,12 +362,18 @@ let getAsset fname =
 module Api =
     let apiTable tableName =
         request (fun r -> OK(readTable tableName false true r))
+    let rawTable tableName =
+        request (fun r -> OK(readTable tableName true true r))
+
 
 let app =
     choose [ // GET >=> pathRegex "/assets/.*" >=> Files.browseHome
              GET >=> path "/" >=> warbler (fun _ -> showIndex())
              GET >=> pathScan "/table/%s" queryOnTable
+             GET >=> pathScan "/api/rawtable/%s" Api.rawTable
              GET >=> pathScan "/api/table/%s" Api.apiTable
+
+
              GET >=> pathScan "/rawtable/%s" queryOnTableRaw
              GET >=> pathScan "/editrow/%s" queryOnEditRow
              GET >=> pathScan "/assets/%s" getAsset

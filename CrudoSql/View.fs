@@ -116,6 +116,13 @@ module LinkGen =
     let TableTop(Table table) = sprintf "/table/%s" table
     let SearchWithFilters searchType (Table table) filters =
         sprintf "/%s/%s?%s" searchType table (Filters.ToUrlQuery(filters))
+    let ApiTableJson(Table table) = sprintf "/api/table/%s" table
+    let ApiRawTableJson(Table table) = sprintf "/api/rawtable/%s" table
+
+    let TableGrid(table) = sprintf "/assets/gridomancer.html?grid=%s" (ApiTableJson table)
+    let TableGridRaw(table) = sprintf "/assets/gridomancer.html?grid=%s" (ApiRawTableJson table)
+
+
 
 type ViewContext =
     { Filters : FilterValue []
@@ -209,7 +216,7 @@ let TableRaw (t : RawTableRec) tableName filters (readResult : TableReadResults)
         match t.Rows.Length with
         | 1 ->
             let singleColTools =
-                [ buttonLink "btn-primary"
+                [ buttonLink "btn-secondary"
                       (LinkGen.SearchWithFilters "editrow" (Table tableName)
                            filters) "Edit" ]
             (singleElementTable t.Header t.Rows.[0], singleColTools)
@@ -230,9 +237,14 @@ let TableRaw (t : RawTableRec) tableName filters (readResult : TableReadResults)
     //let allTools = [ buttonLink "btn-primary" (LinkGen.TableTop (Table tableName)) "Unraw" ]
     let allTools =
         rowtools
-        @ [ buttonLink "btn-primary"
+        @ [ buttonLink "btn-secondary"
                 (LinkGen.SearchWithFilters "table" (Table tableName) filters)
-                "Unraw" ]
+                "Unraw"
+
+            buttonLink "btn-secondary"
+                (LinkGen.TableGridRaw (Table tableName))
+                "Grid"
+           ]
     tableView (textH tableName) allTools tableElement filters [] readResult
     |> renderPage
 
@@ -354,7 +366,11 @@ let TableRich (cols : ColSpec []) (tab : TableCell [] []) (spec : TableSpec)
         toolLinks
         @ [ buttonLink "btn-primary"
                 (LinkGen.SearchWithFilters "rawtable" (Table spec.Name) filters)
-                "Raw" ]
+                "Raw"
+            buttonLink "btn-secondary"
+                (LinkGen.TableGrid (Table spec.Name))
+                "Grid"
+            ]
     tableView (textH (sprintf "%s (%d)" spec.Name readResult.TotalCount))
         allTools tableNode filters tableLinks readResult |> renderPage
 
