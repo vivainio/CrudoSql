@@ -332,7 +332,7 @@ let TableRich (cols : ColSpec []) (tab : TableCell [] []) (spec : TableSpec)
                 |> Seq.toList
 
             let singleColTools =
-                [ buttonLink "btn-primary"
+                [ buttonLink "btn-secondary"
                       (LinkGen.SearchWithFilters "editrow" (Table spec.Name)
                            filters) "Edit" ]
             (table trLines, singleColTools, links)
@@ -364,7 +364,7 @@ let TableRich (cols : ColSpec []) (tab : TableCell [] []) (spec : TableSpec)
 
     let allTools =
         toolLinks
-        @ [ buttonLink "btn-primary"
+        @ [ buttonLink "btn-secondary"
                 (LinkGen.SearchWithFilters "rawtable" (Table spec.Name) filters)
                 "Raw"
             buttonLink "btn-secondary"
@@ -421,7 +421,7 @@ let TableEdit (ctx : ViewContext) (readResult : TableReadResults) =
                           filters)
                      "method", "post" ] (trs @ [ saveSubmit; insertSubmit ])
     let editTools =
-        [ buttonLink "btn-primary"
+        [ buttonLink "btn-secondary"
               (LinkGen.SearchWithFilters "table" (Table tableName) filters)
               "Cancel" ]
     let tv =
