@@ -66,7 +66,7 @@ let renderTable (cols : ColSpec []) (outputTableCols : ColRef [])
             Link
                 (LinkGen.TableSearch tableName s (cell.ToString()),
                  cell.ToString())
-        | Defer(_, _) -> failwithf "Error: deferred left untranslated %A" spec
+        | Defer(_, _) -> failwithf "Error: deferred left untranslated %A, did you call finalize()?" spec
     seq {
         for row in table.Rows do
             let summaryDict =
@@ -183,7 +183,7 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
 
     let (selector, sorter) =
         match tab with
-        | Some spec ->
+        | Some spec when spec.Cols.Length > 0 ->
             let sortcol =
                 ParseHints.GetSorter spec
                 |> spec.GetCol
@@ -250,10 +250,10 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
     if isJson then JsonConvert.SerializeObject readResult.Data
     else
     match tab with
-    | Some spec ->
+    | Some spec when spec.Cols.Length > 0 ->
         let data = renderTable inputCols outputTableCols.Value readResult
         View.TableRich inputCols data spec schema filters readResult
-    | None -> View.TableRaw data tname filters readResult
+    | _ -> View.TableRaw data tname filters readResult
 
 
 

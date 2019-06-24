@@ -23,6 +23,19 @@ let createSchema() =
                         Col "cntr_value"
                         Col "object_name" ]
 
+    let all_tabs = Table "ALL_TABLES"
+    decl all_tabs [
+        Prim "TABLE_NAME"
+    ]
+    let all_cols = Table "ALL_TAB_COLUMNS"
+    decl all_cols [
+        Summ "COLUMN_NAME"
+        foreign "TABLE_NAME" all_tabs
+        Col "DATA_TYPE"
+    ]
+    
+    finalize()
+    
 module ConnectionConfig =
     open Db.DbConnector
 
