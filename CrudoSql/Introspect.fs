@@ -91,14 +91,20 @@ type Introspect(conn : Conn) =
         let resp = conn.Query "" q
         resp.Rows |> Array.map (Array.head >> fun e -> e.ToString())
 
+    member x.OracleColumns =
+        let t = Table "ALL_TAB_COLUMNS"
+        t.Select ["TABLE_NAME"; "COLUMN_NAME"; "DATA_TYPE"]
+        
+    member x.StandardColumns =
+        let t = Table "INFORMATION_SCHEMA.COLUMNS"
+        t.Select ["TABLE_NAME"; "COLUMN_NAME"; "DATA_TYPE"]
+        
     member x.ReadAll() =
-        let columns = Table "INFORMATION_SCHEMA.COLUMNS"
-
+        let columns = match syntax with 
+                      | SqlSyntax.Ora -> x.OracleColumns 
+                      | _ -> x.StandardColumns
         let rows =
-            RunSql [ Select [ columns?TABLE_NAME
-                              columns?COLUMN_NAME
-                              columns?DATA_TYPE ]
-                     From columns ]
+            RunSql [ columns ]
             |> fst
             |> Seq.map Seq.cast<string>
             |> Seq.groupBy Seq.head
