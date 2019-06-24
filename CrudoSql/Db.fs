@@ -83,6 +83,7 @@ let ConnectToDefault() =
 type RawTableRec =
     { Name : string
       Header : string []
+      Types : Type[]
       Rows : obj [] [] }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -240,14 +241,14 @@ type Conn() =
         x.QueryImpl q
 
     // tableName is optional informational argument, set to "" if don't care
-    member x.QueryImpl q =
+    member x.QueryImpl (q: IDbCommand) =
         use reader = q.ExecuteReader()
         let headers =
             [| 0..(reader.FieldCount - 1) |]
-            |> Array.map (fun i -> reader.GetName i)
-        let valArray = Array.zeroCreate reader.FieldCount
+            |> Array.map (fun i -> (reader.GetName i, reader.GetFieldType i))
         { Name = "tablename"
-          Header = headers
+          Header = headers |> Array.map fst
+          Types = headers |> Array.map snd
           Rows =
               seq {
                   while reader.Read() do

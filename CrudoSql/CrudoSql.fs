@@ -246,7 +246,7 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
         let countres =
             SqlRunner.Run (req.url.PathAndQuery + " count") countClause
         totalCount <- Convert.ToInt32 (countres.Rows.[0].[0])
-    let readResult =
+    let readResult: TableReadResults =
         { TableName = tname
           TotalCount = totalCount
           Data = data }

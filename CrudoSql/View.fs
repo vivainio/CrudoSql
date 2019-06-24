@@ -6,6 +6,7 @@ open SqlFrags.SqlGen
 open Suave
 open System.Net
 open Microsoft.FSharpLu.Json
+open System
 
 let safeText txt = System.Net.WebUtility.HtmlEncode(txt) |> text
 let divId id = div [ "id", id ]
@@ -195,14 +196,21 @@ let tableView headingNode allTools tableNode filters preamble
                                           tableNode ])
     full
 
-// should not be needed
+let bytesAsGuid (b: byte[]) =
+    Guid(b).ToString("N")
+
+let renderTyped (t: Type) (o: obj) =
+    if t = typeof<byte[]> then bytesAsGuid (o :?> byte[]) else
+    o.ToString()
+
+
 let TableRaw (t : RawTableRec) tableName filters (readResult : TableReadResults) =
     let heading =
         t.Header
         |> Seq.map th
         |> List.ofSeq
 
-    let toCell (o : obj) = o.ToString() |> text
+    let toCell (idx: int) (o : obj) = renderTyped t.Types.[idx] o |> text
 
     let singleElementTable (keys : string []) (values : obj []) =
         let pairs = Array.zip keys values
@@ -229,7 +237,7 @@ let TableRaw (t : RawTableRec) tableName filters (readResult : TableReadResults)
                 |> Seq.map (fun rowData ->
                        let cells =
                            rowData
-                           |> Seq.map (fun o -> toCell o |> td)
+                           |> Seq.mapi (fun idx o -> toCell idx o |> td)
                            |> List.ofSeq
                        tr cells)
                 |> List.ofSeq
@@ -517,6 +525,8 @@ let CannedQueries (queries: (string*string) seq) =
                 ])
                 |> List.concat
                 |> List.ofSeq
-    links
-    |> divc "canned"
+    
+    let linksn = divc "canned-links" links
+    let header = tag "p" [] (text "Tip: use declCannedQuery() in crudoscript to create canned sql queries")
+    divc "canned-page" [header; linksn] 
     |> renderPage
