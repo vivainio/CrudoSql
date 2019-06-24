@@ -4,14 +4,14 @@ open Suave
 open Suave.Filters
 open Suave.Operators
 open Suave.Successful
+open Suave.RequestErrors
+open Crudo
 open Crudo
 open SqlFrags.SqlGen
 open Db
 open View
 open Newtonsoft.Json
 open Introspect
-open Newtonsoft.Json
-open System.IO
 open System
 
 module String =
@@ -23,14 +23,17 @@ module String =
 module SqlRunner =
     let RequestLog = ResizeArray<string * string>()
 
+    let RunSql comment sql =
+        RequestLog.Insert(0, (comment, sql))
+        let db = Db.Conn()
+        db.Query "" sql
+        
     let Run comment frags =
         printf "%s\n%A" comment frags
         let syntax = DbConnector.DefaultConnector.Syntax()
         let statement = frags |> serializeSql syntax
-        RequestLog.Insert(0, (comment, statement))
-        let db = Db.Conn()
-        db.Query "" statement
-
+        RunSql comment statement
+ 
 let joinedTableName s = "JOINED_" + s
 
 // raw table has summary colrefs in order after the normal rows
@@ -344,8 +347,17 @@ let viewAllTables() =
 let allMetaData() =
     let ix = Introspect(Conn())
     let md = ix.ReadAll()
-    let sered = JsonConvert.SerializeObject(md, Formatting.Indented)
     View.MetaData md |> OK
+
+
+let runCannedQuery (name: string) =
+    let lookup =  Seq.tryFind (fun (a,b) -> a = name) SchemaGen.cannedQueries
+    let toJson d = JsonConvert.SerializeObject(d, Formatting.Indented)
+    match lookup with
+    | None -> None
+    | Some (name, callable) ->
+        SqlRunner.RunSql name (callable()) |> toJson |> Some
+    
 
 let showIndex() =
     let conndesc =
@@ -360,12 +372,21 @@ let getAsset fname =
     let aname = sprintf "CrudoSql.assets.%s" fname
     Embedded.resource crudoAssembly aname
 
+let listCanned() =
+    let all =
+        SchemaGen.cannedQueries
+        |> Seq.map (fun (a,b) -> a, b())
+    View.CannedQueries all |> OK
+
 module Api =
     let apiTable tableName =
         request (fun r -> OK(readTable tableName false true r))
     let rawTable tableName =
         request (fun r -> OK(readTable tableName true true r))
-
+    
+    let cannedQuery qname =
+        warbler (fun _ ->
+            runCannedQuery qname |> (function | None -> NOT_FOUND "command not found" | Some s -> OK s))
 
 let app =
     choose [ // GET >=> pathRegex "/assets/.*" >=> Files.browseHome
@@ -373,7 +394,7 @@ let app =
              GET >=> pathScan "/table/%s" queryOnTable
              GET >=> pathScan "/api/rawtable/%s" Api.rawTable
              GET >=> pathScan "/api/table/%s" Api.apiTable
-
+             GET >=> pathScan "/api/q/%s" Api.cannedQuery
 
              GET >=> pathScan "/rawtable/%s" queryOnTableRaw
              GET >=> pathScan "/editrow/%s" queryOnEditRow
@@ -381,6 +402,8 @@ let app =
 
              GET >=> path "/alltables/"
              >=> request (fun _ -> OK(viewAllTables()))
+             GET >=> path "/canned" >=> warbler (fun _ -> listCanned())
+
              GET >=> path "/meta/" >=> request (fun _ -> allMetaData())
              GET >=> path "/log/" >=> warbler (fun _ -> sqlLog())
              POST >=> pathScan "/saverow/%s" queryOnSaveRow ]

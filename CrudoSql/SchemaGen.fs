@@ -5,7 +5,7 @@ open Db
 
 let mutable dbSpec = DbSpec()
 let mutable declared = dbSpec.Tables
-
+let cannedQueries = ResizeArray<string * (unit->string)>()
 let startSchema (s : string) =
     printfn "Declaring schema %s" s
     dbSpec <- DbSpec()
@@ -38,6 +38,9 @@ let finalize() =
         tspec.Cols <- newCols
 
 let decl (tab : Table) (cols : ColSpec seq) = declWith tab cols |> ignore
+
+let declCannedQuery (name: string) (callable: unit -> string) =
+    cannedQueries.Add((name, callable))
 
 let foreign colName (t : Table) =
     let resolver (ts : TableSpec) (cs : ColSpec) =

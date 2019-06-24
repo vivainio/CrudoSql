@@ -170,7 +170,9 @@ let renderPage content =
                                                 [ navLink "/" "Home"
                                                   navLink "/alltables/" "All"
                                                   navLink "/meta/" "Metadata"
-                                                  navLink "/log/" "SQL log" ] ]
+                                                  navLink "/log/" "SQL log"
+                                                  navLink "/canned" "Canned"
+                                                  ] ]
                                       divc "container-fluid" [ content ] ] ]
     |> htmlToString
 
@@ -503,4 +505,17 @@ let SqlLog(ents : seq<string * string>) =
     pres
     |> List.concat
     |> divc "crudo-log"
+    |> renderPage
+
+
+let CannedQueries (queries: (string*string) seq) =
+    let links = queries
+                |> Seq.map (fun (n,s) -> [
+                    (tag "a") [ "href", sprintf "/api/q/%s" n ] (text n)
+                    tagc "pre" "sqlentry" (text s)
+                ])
+                |> List.concat
+                |> List.ofSeq
+    links
+    |> divc "canned"
     |> renderPage
