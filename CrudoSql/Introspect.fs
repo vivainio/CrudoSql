@@ -3,6 +3,8 @@ module Crudo.Introspect
 open Db
 open SqlFrags.SqlGen
 
+
+
 type DbTypeInfo =
     | Str of string
     | Num of string
@@ -23,6 +25,7 @@ type DbTypeInfo =
 
 type Introspect(conn : Conn) =
 
+    let syntax = conn.Syntax
     member x.ColTypes(t : Table) =
         let q =
             [ SelectS [ "COLUMN_NAME"; "DATA_TYPE" ]
@@ -69,12 +72,22 @@ type Introspect(conn : Conn) =
             |> printf "%A"
         colinfos
 
-    member x.Tables() =
-        let q =
-            ([ SelectS [ "TABLE_NAME" ]
-               From <| Table "INFORMATION_SCHEMA.TABLES" ]
-             |> serializeSql SqlSyntax.Any)
+    member x.OracleTables =
+            let tabs = Table "ALL_TABLES"
+            tabs.Select ["TABLE_NAME"]
+           
+    member x.StandardTables =
+            let tabs = Table "INFORMATION_SCHEME.TABLES"
+            tabs.Select ["TABLE_NAME"]
 
+                    
+    member x.Tables() =
+        let tabs = match syntax with
+                   | SqlSyntax.Ora -> x.OracleTables
+                   | _ -> x.StandardTables
+        
+        
+        let q = [tabs] |> serializeSql syntax
         let resp = conn.Query "" q
         resp.Rows |> Array.map (Array.head >> fun e -> e.ToString())
 
