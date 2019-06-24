@@ -1,6 +1,7 @@
 // Learn more about F# at http://fsharp.org
 // This is where your schema etc goes. Crudo is just a library!
 open Crudo
+open CrudoSql.Tests
 open Db
 open SqlFrags.SqlGen
 open SchemaGen
@@ -28,13 +29,20 @@ module ConnectionConfig =
     let mssql =
         typeof<System.Data.SqlClient.SqlConnection>.AssemblyQualifiedName
 
-    let GetConnectors() =
-        [ "local",
+    let oracle = typeof<Oracle.ManagedDataAccess.Client.OracleConnection>.AssemblyQualifiedName
+    let GetConnectors() = [
+          "oracle",
+          Connector(oracle,          
+                  ConnectionString [ DataSource "DOCKER"
+                                     UserId Secrets.Username
+                                     Password Secrets.Password])
+                  
+
+          "local",
           Connector(mssql,
                     ConnectionString [ DataSource "localhost"
                                        Catalog "IA"
-                                       IntegratedSecurity true ])
-          "bigoracle", Connector("NOTPROVIDED_PLEASEFIX", "(oracle-bs-here)") ]
+                                       IntegratedSecurity true ])]
 
     let Init() = DefaultConnector <- GetConnectors().[0] |> snd
 

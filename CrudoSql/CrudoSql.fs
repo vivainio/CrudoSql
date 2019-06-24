@@ -12,6 +12,7 @@ open Newtonsoft.Json
 open Introspect
 open Newtonsoft.Json
 open System.IO
+open System
 
 module String =
     let truncate count (s : string) =
@@ -235,13 +236,13 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
           pager ]
 
     let data = SqlRunner.Run (req.url.PathAndQuery) pagedClause
-    let mutable totalCount = data.Rows.Length
+    let mutable totalCount = data.Rows.Length 
     // totalcount populated separately if we are already paging, or got a big request
     if data.Rows.Length >= MAX_PAGE_SIZE || pagerSkip.IsSome then
         let countClause = [ SelectS [ "Count(*)" ] ] @ innerClause
         let countres =
             SqlRunner.Run (req.url.PathAndQuery + " count") countClause
-        totalCount <- countres.Rows.[0].[0] |> unbox
+        totalCount <- Convert.ToInt32 (countres.Rows.[0].[0])
     let readResult =
         { TableName = tname
           TotalCount = totalCount
