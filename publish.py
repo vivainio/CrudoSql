@@ -3,7 +3,7 @@ from __future__ import print_function
 import os,shutil
 
 prjdir = "CrudoSql"
-version = "1.3.0.0"
+version = "1.4.0.0"
 def c(s):
     print(">",s)
     err = os.system(s)
