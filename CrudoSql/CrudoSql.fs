@@ -394,7 +394,7 @@ let app =
              GET >=> pathScan "/table/%s" queryOnTable
              GET >=> pathScan "/api/rawtable/%s" Api.rawTable
              GET >=> pathScan "/api/table/%s" Api.apiTable
-             GET >=> pathScan "/api/q/%s" Api.cannedQuery
+             GET >=> pathScan "/api/canned/%s" Api.cannedQuery
 
              GET >=> pathScan "/rawtable/%s" queryOnTableRaw
              GET >=> pathScan "/editrow/%s" queryOnEditRow

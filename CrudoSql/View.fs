@@ -110,6 +110,7 @@ module Filters =
                | _ -> true)
 
 module LinkGen =
+    let Gridomancer endpoint =  sprintf "/assets/gridomancer.html?grid=%s" endpoint
     let TableSearch (Table table) col value =
         sprintf "/table/%s?%s=%s" table col value
     let TableRaw(Table table) = sprintf "/rawtable/%s" table
@@ -118,11 +119,11 @@ module LinkGen =
         sprintf "/%s/%s?%s" searchType table (Filters.ToUrlQuery(filters))
     let ApiTableJson(Table table) = sprintf "/api/table/%s" table
     let ApiRawTableJson(Table table) = sprintf "/api/rawtable/%s" table
+    let ApiCannedQuery name = sprintf "/api/canned/%s" name
 
-    let TableGrid(table) = sprintf "/assets/gridomancer.html?grid=%s" (ApiTableJson table)
-    let TableGridRaw(table) = sprintf "/assets/gridomancer.html?grid=%s" (ApiRawTableJson table)
-
-
+    let TableGrid table = ApiTableJson table |> Gridomancer
+    let TableGridRaw table = ApiRawTableJson table |> Gridomancer
+    let CannedResponse url = ApiCannedQuery url |> Gridomancer
 
 type ViewContext =
     { Filters : FilterValue []
@@ -511,7 +512,7 @@ let SqlLog(ents : seq<string * string>) =
 let CannedQueries (queries: (string*string) seq) =
     let links = queries
                 |> Seq.map (fun (n,s) -> [
-                    (tag "a") [ "href", sprintf "/api/q/%s" n ] (text n)
+                    (tag "a") [ "href", LinkGen.CannedResponse n ] (text n)
                     tagc "pre" "sqlentry" (text s)
                 ])
                 |> List.concat

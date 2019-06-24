@@ -37,9 +37,6 @@ let createSchema() =
     declCannedQuery "tabs" (fun () -> "select 1 from dual")
         
     finalize()
-   
-
- 
     
 module ConnectionConfig =
     open Db.DbConnector
