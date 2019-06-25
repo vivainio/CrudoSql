@@ -99,9 +99,11 @@ module Filters =
     let TryFind key (filters : FilterValue []) =
         filters |> Array.tryFind (fun f -> f.Key = key)
 
-    let GetPage (offset : int) (batchSize : int) =
+    let GetPage (offset : int) (batchSize : int) (totalCount: int)=
         [| Meta("$skip", string offset)
-           Meta("$limit", string batchSize) |]
+           Meta("$limit", string batchSize) 
+           Meta("$count", string totalCount) 
+           |]
 
     let WithoutPage(filters : FilterValue []) =
         filters
@@ -144,7 +146,7 @@ let CreatePager totalCount pageSize currentSkip hrefGenerator =
     |> Array.concat
     |> mapPairs
            (fun st en ->
-           (textLink (hrefGenerator st en) (sprintf "%d - %d" st en)),
+           (textLink (hrefGenerator st en totalCount) (sprintf "%d - %d" st en)),
            st = currentSkip)
     |> Seq.map (fun (nod, isActive) -> tag "li" (if isActive then
                                                      [ "class", "active" ]
@@ -357,10 +359,11 @@ let TableRich (cols : ColSpec []) (tab : TableCell [] []) (spec : TableSpec)
 
             let tableRows = [ tr heading ] @ trLines
             let noPaging = Filters.WithoutPage filters
-            let makeHref start end_ =
+            let makeHref start end_ total =
                 LinkGen.SearchWithFilters "table" (Table spec.Name)
                     (Array.concat [ noPaging
-                                    Filters.GetPage start (end_ - start) ])
+                                    Filters.GetPage start (end_ - start) total ])
+
 
             let currentSkip =
                 filters

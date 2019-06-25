@@ -13,6 +13,7 @@ open View
 open Newtonsoft.Json
 open Introspect
 open System
+open System.Diagnostics
 
 module String =
     let truncate count (s : string) =
@@ -26,8 +27,10 @@ module SqlRunner =
     let RunSql comment sql =
         RequestLog.Insert(0, (comment, sql))
         let db = Db.Conn()
-        db.Query "" sql
-        
+        let t = Stopwatch.StartNew()
+        let r = db.Query "" sql
+        RequestLog.[0] <- (sprintf "%s [%dms]" comment t.ElapsedMilliseconds, sql)
+        r
     let Run comment frags =
         printf "%s\n%A" comment frags
         let syntax = DbConnector.DefaultConnector.Syntax()
@@ -209,7 +212,7 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
     let whereExp = Filters.ToSqlWhereCondition src.Name filters
     let pagerSkip = Filters.TryFind "$skip" filters
     let pagerLimit = Filters.TryFind "$limit" filters
-
+    let pagerCount = Filters.TryFind "$count" filters
     let pager =
         match filters with
         | _ when Array.contains (Meta("$limit", "off")) filters -> Skip
@@ -223,17 +226,8 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
           Many joins
           whereExp ]
 
-    //sorter && pager here
-    //let pagedClause = [selector] @ innerClause @ [ sorter; pager ]
-    let outerSelector =
-        match selector with
-        | _ -> SelectS [ "*" ]
-
-    //| (Select cols) -> Select (cols |> Seq.map (ColRef.PrefixTable "rootq."))
-    // | _ -> selector
     let pagedClause =
-        [ outerSelector
-          Raw "from"
+        [ Raw "Select * from"
           NestAs("rootq", [ selector ] @ innerClause)
           sorter
           pager ]
