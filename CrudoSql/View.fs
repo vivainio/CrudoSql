@@ -198,11 +198,13 @@ let tableView headingNode allTools tableNode filters preamble
                                           tableNode ])
     full
 
-let bytesAsGuid (b: byte[]) =
+let bytesAsGuid (o: obj) =
+    if o.GetType() = typeof<System.DBNull> then "null" else
+    let b = o:?> byte[]
     Guid(b).ToString("N")
 
 let renderTyped (t: Type) (o: obj) =
-    if t = typeof<byte[]> then bytesAsGuid (o :?> byte[]) else
+    if t = typeof<byte[]> then bytesAsGuid o else
     o.ToString()
 
 
