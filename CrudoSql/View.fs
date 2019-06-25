@@ -221,9 +221,9 @@ let TableRaw (t : RawTableRec) tableName filters (readResult : TableReadResults)
 
         let trs =
             pairs
-            |> Array.map (fun (k, v) ->
+            |> Array.mapi (fun idx (k, v) ->
                    tr [ td (text k)
-                        td (text (v.ToString())) ])
+                        td (toCell idx v) ])
             |> List.ofArray
         table trs
 
