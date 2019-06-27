@@ -35,8 +35,10 @@ module DbConnector =
         member x.Show() =
             sprintf "%s :: %s" (provider.Split(',').[0]) connectionString
         member x.Syntax() =
-            if provider.Contains "SqlClient" then SqlSyntax.Any
-            else SqlSyntax.Ora
+            match provider with 
+            | _ when provider.Contains "MySql" -> SqlSyntax.My
+            | _ when provider.Contains "SqlClient" -> SqlSyntax.Any
+            | _ -> SqlSyntax.Ora
 
     type ConnectionStringFrag =
         | Provider of string

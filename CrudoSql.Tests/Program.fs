@@ -18,19 +18,17 @@ let createSchema() =
     decl Columns [ Col "TABLE_NAME"
                    Col "COLUMN_NAME"
                    Col "DATA_TYPE" ]
-    let perfcounters = Table "sys.dm_os_performance_counters"
-    decl perfcounters [ Prim "counter_name"
-                        Col "cntr_value"
-                        Col "object_name" ]
+    let Tables = Table "INFORMATION_SCHEMA.TABLES"
+    decl Tables [ Col "TABLE_NAME" ]
 
-    let all_tabs = Table "ALL_TABLES"
-    decl all_tabs [
+    let allTabs = Table "ALL_TABLES"
+    decl allTabs [
         Prim "TABLE_NAME"
     ]
-    let all_cols = Table "ALL_TAB_COLUMNS"
-    decl all_cols [
+    let allCols = Table "ALL_TAB_COLUMNS"
+    decl allCols [
         Summ "COLUMN_NAME"
-        foreign "TABLE_NAME" all_tabs
+        foreign "TABLE_NAME" allTabs
         Col "DATA_TYPE"
     ]
     
@@ -41,11 +39,15 @@ let createSchema() =
 module ConnectionConfig =
     open Db.DbConnector
 
-    let mssql =
-        typeof<System.Data.SqlClient.SqlConnection>.AssemblyQualifiedName
-
+    // remove provider types you don't need
+    let mssql = typeof<System.Data.SqlClient.SqlConnection>.AssemblyQualifiedName
     let oracle = typeof<Oracle.ManagedDataAccess.Client.OracleConnection>.AssemblyQualifiedName
+    let mysql = typeof<MySql.Data.MySqlClient.MySqlConnection>.AssemblyQualifiedName
     let GetConnectors() = [
+          "mysql",
+          Connector(mysql, 
+            "Host=localhost;Port=3306;Username=root;Password=fail;Database=fb;"
+          )
           "oracle",
           Connector(oracle,          
                   ConnectionString [ DataSource "DOCKER"

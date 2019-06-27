@@ -207,7 +207,7 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
              |> aliasColumns
              |> Seq.ofArray
              |> SelectAs, OrderBy [ sprintf "%d ASC" (sorterColumnIndex + 1) ])
-        | _ -> (SelectS [ "*" ], OrderBy [ "1" ])
+        | _ -> (Raw "select *", OrderBy [ "1" ])
 
     let whereExp = Filters.ToSqlWhereCondition src.Name filters
     let pagerSkip = Filters.TryFind "$skip" filters
@@ -236,7 +236,7 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
     let mutable totalCount = data.Rows.Length 
     // totalcount populated separately if we are already paging, or got a big request
     if data.Rows.Length >= MAX_PAGE_SIZE || pagerSkip.IsSome then
-        let countClause = [ SelectS [ "Count(*)" ] ] @ innerClause
+        let countClause = [ Raw "select Count(*)" ] @ innerClause
         let countres =
             SqlRunner.Run (req.url.PathAndQuery + " count") countClause
         totalCount <- Convert.ToInt32 (countres.Rows.[0].[0])
@@ -256,10 +256,9 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
 
 let readRawTable tableName (filters : FilterValue []) =
     let whereExp = Filters.ToSqlWhereCondition tableName filters
-
+    let t = Table tableName
     let query =
-        [ SelectS [ "*" ]
-          From(Table tableName)
+        [ t.SelectAll
           whereExp ]
 
     let data = SqlRunner.Run ("readRawTable " + tableName) query

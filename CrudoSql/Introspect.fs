@@ -27,9 +27,10 @@ type Introspect(conn : Conn) =
 
     let syntax = conn.Syntax
     member x.ColTypes(t : Table) =
+        
+        let t = Table "INFORMATION_SCHEMA.COLUMNS"
         let q =
-            [ SelectS [ "COLUMN_NAME"; "DATA_TYPE" ]
-              From <| Table "INFORMATION_SCHEMA.COLUMNS"
+            [ t.Select [ "COLUMN_NAME"; "DATA_TYPE" ]
               WhereS <| "TABLE_NAME = " + sqlQuoted t.Name ]
 
         let asPairs (arr : 'a []) = arr.[0], arr.[1]
@@ -51,7 +52,7 @@ type Introspect(conn : Conn) =
         let query =
             match conn.Syntax with
             | Any ->
-                [ SelectS [ "col.Name"; "*" ]
+                [ Raw "select col.name, *"
                   FromAs(columns, colAlias)
                   JoinOn(objects?object_id, colAlias?object_id, objAlias, "")
                   Where [ objAlias?Name === t.Name
@@ -77,7 +78,7 @@ type Introspect(conn : Conn) =
             tabs.Select ["TABLE_NAME"]
            
     member x.StandardTables =
-            let tabs = Table "INFORMATION_SCHEME.TABLES"
+            let tabs = Table "INFORMATION_SCHEMA.TABLES"
             tabs.Select ["TABLE_NAME"]
 
                     
