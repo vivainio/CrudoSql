@@ -20,6 +20,8 @@ module String =
         let len = String.length s
         if len > count then s.[0..(min count (String.length s) - 1)] + "..."
         else s
+    let truncateAtMax count (s:string) = 
+        if s.Length < count then s else s.Substring(0, count)
 
 module SqlRunner =
     let RequestLog = ResizeArray<string * string>()
@@ -36,8 +38,11 @@ module SqlRunner =
         let syntax = DbConnector.DefaultConnector.Syntax()
         let statement = frags |> serializeSql syntax
         RunSql comment statement
- 
-let joinedTableName s = "JOINED_" + s
+
+// oracle only allows 30 char id's
+let truncatedName (name: string) = String.truncateAtMax 29 name
+
+let joinedTableName s = "J_" + s |> truncatedName
 
 // raw table has summary colrefs in order after the normal rows
 //
@@ -184,8 +189,8 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
 
                let tabprefix =
                    if tab = mainTable then ""
-                   else (tab.Replace("JOINED_", "") + "_")
-               (col, tabprefix + colname))
+                   else tab.Replace("J_", "") + "_"
+               (col, truncatedName (tabprefix + colname)))
 
     let (selector, sorter) =
         match tab with
@@ -227,7 +232,7 @@ let readTable tname (isRaw : bool) (isJson: bool) (req : HttpRequest) =
           whereExp ]
 
     let pagedClause =
-        [ Raw "Select * from"
+        [ Raw "select * from"
           NestAs("rootq", [ selector ] @ innerClause)
           sorter
           pager ]
